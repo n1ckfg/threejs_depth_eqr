@@ -25,8 +25,8 @@ function main() {
 
 		scene = new THREE.Scene();
 
-		geometry = new THREE.SphereBufferGeometry(500, 60, 40);
-		//geometry = new THREE.IcosahedronGeometry(500, 4);
+		geometry = new THREE.SphereBufferGeometry(100, 256, 256);
+		//geometry = new THREE.IcosahedronGeometry(100, 6);
 		// invert the geometry on the x-axis so that all of the faces point inward
 		geometry.scale(- 1, 1, 1);
 
@@ -41,16 +41,12 @@ function main() {
 		video.play();
 
 		texture = new THREE.VideoTexture(video);
-		//var material = new THREE.MeshBasicMaterial({ map: texture });
+		//material = new THREE.MeshBasicMaterial({ map: texture });
 	    material = new THREE.ShaderMaterial({
 			uniforms: {
-				tExplosion: {
+				tex: {
 					type: "t",
 					value: texture
-				},
-				time: {
-					type: "f",
-					value: 0.0
 				}
 			},
 	        vertexShader: document.getElementById("vertexShader").textContent,
@@ -114,7 +110,6 @@ function main() {
 
 	function animate() {
 		requestAnimationFrame(animate);
-    	material.uniforms[ 'time' ].value = .00025 * ( Date.now() - start );
 		update();
 	}
 
