@@ -13,14 +13,28 @@
 			varying vec2 vUv;
 			uniform sampler2D tex;
 
+		    float _Displacement = 10.0;
+			float _Maximum = 99.0;
+			float _BaselineLength = 0.5;
+    		float _SphericalAngle = 10.0;
+
+	        float getDepthSpherical(float d) {
+	            return asin(_BaselineLength * sin(_SphericalAngle)) / asin(d);
+	        }
+
 			void main() {
 			    vUv = uv;
 			    vec2 uv2 = vec2(uv.x, uv.y * 0.5);
 
 			    vec4 col = texture2D(tex, uv2);
-			    float displacementScale = -100.0;
-			    float displacement = col.x * displacementScale;
-			    vec3 newPosition = position + normal * displacement;
+	    
+   			    //float displacement = col.x * displacementScale;
+			    //vec3 newPosition = position + normal * displacement;
+
+			    //vec3 newPosition = normal * clamp(getDepthSpherical(col.x), -_Maximum, 0) * _Displacement;
+			    vec3 newPosition = normal * getDepthSpherical(col.x) * _Displacement;
+			    newPosition.y *= -1.0;
+
 			    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 			}
 		</script>
