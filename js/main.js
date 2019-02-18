@@ -36,7 +36,7 @@ function main() {
 		video.height = 360;
 		video.loop = true;
 		video.muted = true;
-		video.src = "../images/bicycle_360.mp4";
+		video.src = "./images/bicycle_360.mp4";
 		video.setAttribute("webkit-playsinline", "webkit-playsinline");
 		video.play();
 
