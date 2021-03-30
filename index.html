@@ -8,6 +8,10 @@
 		<link rel="stylesheet" href="./css/main.css"/>
 
 		<script src="./js/libraries/three.js"></script>
+		<script src="./js/libraries/util.js/general-util.js"></script>
+		<script src="./js/libraries/util.js/threejs-util.js"></script>
+		<script src="./js/libraries/util.js/threejs-wasd.js"></script>
+		<script src="./js/libraries/util.js/threejs-mouse.js"></script>
 
     	<script type="x-shader/x-vertex" id="vertexShader">
 			varying vec2 vUv;
@@ -58,14 +62,11 @@
 			    gl_FragColor = col;
 			}
     	</script>
-
-		<script src="./js/main.js"></script>
 	</head>
 
 	<body>
-
 		<div id="container"></div>
-
+		<script src="./js/main.js"></script>
 	</body>
 
 </html>

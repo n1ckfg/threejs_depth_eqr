@@ -1,132 +1,78 @@
-function main() {
+"use strict";
 
-	var camera, scene, renderer;
-	var container, mesh;
-	var geometry, video, texture, material;
-    var start = Date.now();
+let camera, scene, renderer;
+let container, mesh;
+let geometry, video, texture, material;
+let start = Date.now();
 
-	var isUserInteracting = false,
-		lon = 0, lat = 0,
-		phi = 0, theta = 0,
-		distance = 50,
-		onPointerDownPointerX = 0,
-		onPointerDownPointerY = 0,
-		onPointerDownLon = 0,
-		onPointerDownLat = 0;
+init();
+animate();
 
-	init();
-	animate();
+function init() {
+	container = document.getElementById("container");
 
-	function init() {
-		container = document.getElementById("container");
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+	camera.target = new THREE.Vector3(0, 0, 0);
 
-		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
-		camera.target = new THREE.Vector3(0, 0, 0);
+	scene = new THREE.Scene();
 
-		scene = new THREE.Scene();
+	geometry = new THREE.SphereBufferGeometry(100, 256, 256);
+	//geometry = new THREE.IcosahedronGeometry(100, 6);
+	// invert the geometry on the x-axis so that all of the faces point inward
+	geometry.scale(- 1, 1, 1);
 
-		geometry = new THREE.SphereBufferGeometry(100, 256, 256);
-		//geometry = new THREE.IcosahedronGeometry(100, 6);
-		// invert the geometry on the x-axis so that all of the faces point inward
-		geometry.scale(- 1, 1, 1);
+	video = document.createElement("video");
+	video.crossOrigin = "anonymous";
+	video.width = 640;
+	video.height = 360;
+	video.loop = true;
+	video.muted = true;
+	video.src = "./images/bicycle_360.mp4";
+	video.setAttribute("webkit-playsinline", "webkit-playsinline");
+	video.play();
 
-		video = document.createElement("video");
-		video.crossOrigin = "anonymous";
-		video.width = 640;
-		video.height = 360;
-		video.loop = true;
-		video.muted = true;
-		video.src = "./images/bicycle_360.mp4";
-		video.setAttribute("webkit-playsinline", "webkit-playsinline");
-		video.play();
+	texture = new THREE.VideoTexture(video);
+	//material = new THREE.MeshBasicMaterial({ map: texture });
+    material = new THREE.ShaderMaterial({
+		uniforms: {
+			tex: {
+				type: "t",
+				value: texture
+			}
+		},
+        vertexShader: document.getElementById("vertexShader").textContent,
+        fragmentShader: document.getElementById("fragmentShader").textContent
+    });
 
-		texture = new THREE.VideoTexture(video);
-		//material = new THREE.MeshBasicMaterial({ map: texture });
-	    material = new THREE.ShaderMaterial({
-			uniforms: {
-				tex: {
-					type: "t",
-					value: texture
-				}
-			},
-	        vertexShader: document.getElementById("vertexShader").textContent,
-	        fragmentShader: document.getElementById("fragmentShader").textContent
-	    });
+	mesh = new THREE.Mesh(geometry, material);
 
-		mesh = new THREE.Mesh(geometry, material);
+	scene.add(mesh);
 
-		scene.add(mesh);
+	renderer = new THREE.WebGLRenderer();
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	container.appendChild(renderer.domElement);
 
-		renderer = new THREE.WebGLRenderer();
-		renderer.setPixelRatio(window.devicePixelRatio);
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		container.appendChild(renderer.domElement);
+	setupWasd();
+	setupMouse();
 
-		document.addEventListener("mousedown", onDocumentMouseDown, false);
-		document.addEventListener("mousemove", onDocumentMouseMove, false);
-		document.addEventListener("mouseup", onDocumentMouseUp, false);
-		document.addEventListener("wheel", onDocumentMouseWheel, false);
-
-		//
-
-		window.addEventListener("resize", onWindowResize, false);
-	}
-
-	function onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
-
-		renderer.setSize(window.innerWidth, window.innerHeight);
-	}
-
-	function onDocumentMouseDown(event) {
-		event.preventDefault();
-
-		isUserInteracting = true;
-
-		onPointerDownPointerX = event.clientX;
-		onPointerDownPointerY = event.clientY;
-
-		onPointerDownLon = lon;
-		onPointerDownLat = lat;
-	}
-
-	function onDocumentMouseMove(event) {
-		if (isUserInteracting === true) {
-			lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-			lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
-		}
-	}
-
-	function onDocumentMouseUp() {
-		isUserInteracting = false;
-	}
-
-	function onDocumentMouseWheel(event) {
-		distance += event.deltaY * 0.05;
-
-		distance = THREE.Math.clamp(distance, 1, 50);
-	}
-
-	function animate() {
-		requestAnimationFrame(animate);
-		update();
-	}
-
-	function update() {
-		lat = Math.max(- 85, Math.min(85, lat));
-		phi = THREE.Math.degToRad(90 - lat);
-		theta = THREE.Math.degToRad(lon);
-
-		camera.position.x = distance * Math.sin(phi) * Math.cos(theta);
-		camera.position.y = distance * Math.cos(phi);
-		camera.position.z = distance * Math.sin(phi) * Math.sin(theta);
-
-		camera.lookAt(camera.target);
-
-		renderer.render(scene, camera);
-	}
-
+	window.addEventListener("resize", onWindowResize, false);
 }
 
-window.onload = main;
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+	requestAnimationFrame(animate);
+	update();
+}
+
+function update() {
+	updateWasd();
+
+	renderer.render(scene, camera);
+}

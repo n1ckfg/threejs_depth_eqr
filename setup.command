@@ -9,4 +9,10 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 cd $DIR
-http-server
+
+git submodule init
+git submodule update --init --recursive
+git submodule sync
+git submodule foreach git checkout master
+git submodule foreach git reset --hard
+git submodule foreach git pull origin master
