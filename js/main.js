@@ -23,12 +23,15 @@ function init() {
 
 	video = document.createElement("video");
 	video.crossOrigin = "anonymous";
+	video.setAttribute('crossorigin', 'anonymous');
+	video.setAttribute("webkit-playsinline", "webkit-playsinline");
+	video.setAttribute('playsinline', 'playsinline');
 	video.width = 640;
 	video.height = 360;
+	video.autoplay = true;
 	video.loop = true;
 	video.muted = true;
 	video.src = "./images/bicycle_360.mp4";
-	video.setAttribute("webkit-playsinline", "webkit-playsinline");
 	video.play();
 
 	texture = new THREE.VideoTexture(video);
