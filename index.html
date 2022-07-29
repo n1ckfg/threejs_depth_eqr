@@ -5,7 +5,7 @@
 		<title>...</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" href="./css/main.css"/>
+		<link rel="stylesheet" href="./style.css"/>
 
 		<script src="./js/libraries/three.js"></script>
 		<script src="./js/libraries/util.js/general-util.js"></script>
@@ -36,6 +36,8 @@
 	        }
 
 			void main() {
+			    gl_PointSize = 15.0;
+
 			    vUv = uv;
 			    vec2 uv2 = vec2(uv.x, uv.y * 0.5);
 
@@ -55,18 +57,107 @@
 			varying vec2 vUv;
 			uniform sampler2D tex;
 
+			vec3 saturation(vec3 rgb, float adjustment) {
+			    const vec3 W = vec3(0.2125, 0.7154, 0.0721);
+			    vec3 intensity = vec3(dot(rgb, W));
+			    return mix(intensity, rgb, adjustment);
+			}
+
 			void main() {
 			    vec2 uv = vec2(vUv.x, 0.5 + vUv.y * 0.5);
 
 			    vec4 col = texture2D(tex, uv);
-			    gl_FragColor = col;
+			    gl_FragColor = vec4(saturation(col.xyz, 1.5), 0.3);
 			}
     	</script>
 	</head>
 
 	<body>
 		<div id="container"></div>
-		<script src="./js/main.js"></script>
+		<script>
+			"use strict";
+
+			let camera, scene, renderer;
+			let container, mesh;
+			let geometry, video, texture, material;
+			let start = Date.now();
+
+			init();
+			animate();
+
+			function init() {
+				container = document.getElementById("container");
+
+				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+				camera.target = new THREE.Vector3(0, 0, 0);
+
+				scene = new THREE.Scene();
+
+				geometry = new THREE.SphereBufferGeometry(10, 512, 256);
+				//geometry = new THREE.IcosahedronGeometry(100, 6);
+				// invert the geometry on the x-axis so that all of the faces point inward
+				geometry.scale(- 1, 1, 1);
+
+				video = document.createElement("video");
+				video.crossOrigin = "anonymous";
+				video.setAttribute('crossorigin', 'anonymous');
+				video.setAttribute("webkit-playsinline", "webkit-playsinline");
+				video.setAttribute('playsinline', 'playsinline');
+				video.width = 640;
+				video.height = 360;
+				video.autoplay = true;
+				video.loop = true;
+				video.muted = true;
+				video.src = "./images/bicycle_360.mp4";
+				video.play();
+
+				texture = new THREE.VideoTexture(video);
+				//material = new THREE.MeshBasicMaterial({ map: texture });
+			    material = new THREE.ShaderMaterial({
+					uniforms: {
+						tex: {
+							type: "t",
+							value: texture
+						}
+					},
+					transparent: true,
+			        vertexShader: document.getElementById("vertexShader").textContent,
+			        fragmentShader: document.getElementById("fragmentShader").textContent
+			    });
+
+				mesh = new THREE.Points(geometry, material);
+
+				scene.add(mesh);
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				container.appendChild(renderer.domElement);
+
+				setupWasd();
+				setupMouse();
+
+				window.addEventListener("resize", onWindowResize, false);
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+
+			function animate() {
+				requestAnimationFrame(animate);
+				update();
+			}
+
+			function update() {
+				updateWasd();
+
+				renderer.render(scene, camera);
+			}			
+		</script>
 	</body>
 
 </html>
